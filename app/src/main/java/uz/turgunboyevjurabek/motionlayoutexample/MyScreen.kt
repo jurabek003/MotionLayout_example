@@ -15,13 +15,16 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,6 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -50,8 +54,13 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
@@ -143,7 +152,7 @@ fun MyScreen(modifier: Modifier) {
                 .layoutId("username")
         )
         Column(
-            modifier=Modifier
+            modifier= Modifier
                 .fillMaxWidth()
                 .layoutId("actions"),
             verticalArrangement = Arrangement.Center,
@@ -152,7 +161,7 @@ fun MyScreen(modifier: Modifier) {
             LazyColumn(
                 state = lazyListState
             ) {
-               items(50){
+               items(15){
                    ListUI()
                }
             }
@@ -174,7 +183,55 @@ fun ListUI(modifier: Modifier = Modifier) {
             ),
         shape = RoundedCornerShape(16.dp),
     ) {
+        ConstraintLayout(
+            modifier = modifier
+                .fillMaxSize()
+        ) {
+            val (image, title, description) = createRefs()
+            Image(
+                painter = painterResource(id = R.drawable.jetpack_compose),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(50.dp)
+                    .constrainAs(image) {
+                        start.linkTo(parent.start, 5.dp)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+            Text(
+                text = "Jetpack Compose",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                    fontStyle = FontStyle.Normal,
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.ExtraBold
+                ),
+                modifier = Modifier
+                    .constrainAs(title) {
+                        start.linkTo(image.end, 10.dp)
+                        top.linkTo(parent.top,10.dp)
+                    }
+            )
+            Text(
+                text = "This is a Jetpack Compose card",
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                    fontStyle = FontStyle.Italic,
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = modifier
+                    .constrainAs(description){
+                        start.linkTo(image.end, 5.dp)
+                        top.linkTo(title.bottom, 5.dp)
+                    }
+            )
 
+
+        }
     }
 
 }
