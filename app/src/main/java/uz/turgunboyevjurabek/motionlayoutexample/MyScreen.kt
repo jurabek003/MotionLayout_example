@@ -4,6 +4,7 @@
 
 package uz.turgunboyevjurabek.motionlayoutexample
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -13,6 +14,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -30,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +56,7 @@ import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun MyScreen(modifier: Modifier) {
     val context = LocalContext.current
@@ -77,8 +84,25 @@ fun MyScreen(modifier: Modifier) {
             animationSpec = tween()
         )
     }
+
+    val lazyListState = rememberLazyListState()
+
+    // Track the scroll position of LazyColumn
+    val isAtTop by derivedStateOf { lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0 }
+
+    LaunchedEffect(isAtTop) {
+        // Update anchoredDraggableState to trigger MotionLayout when LazyColumn is scrolled to the top
+        if (isAtTop) {
+            anchoredDraggableState.animateTo(AnchoredDraggableCardState.DRAGGED_DOWN)
+        } else {
+            anchoredDraggableState.animateTo(AnchoredDraggableCardState.DRAGGED_UP)
+        }
+    }
+
+
     val offset = if (anchoredDraggableState.offset.isNaN()) 0f else anchoredDraggableState.offset
     val progress = (1 - (offset / draggedDownAnchorTop)).coerceIn(0f, 1f)
+
 
     MotionLayout(
         motionScene = MotionScene(content = motionSceneContent),
@@ -125,7 +149,9 @@ fun MyScreen(modifier: Modifier) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LazyColumn {
+            LazyColumn(
+                state = lazyListState
+            ) {
                items(50){
                    ListUI()
                }
